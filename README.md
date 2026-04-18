@@ -1,69 +1,74 @@
 # Typlica
 
-Typst 交互式练习平台 —— 将类似 [Rustlings](https://github.com/rust-lang/rustlings) 的练习体验带到 [Typst](https://typst.app/) 的世界中。
+An interactive Typst exercise platform — bringing a [Rustlings](https://github.com/rust-lang/rustlings)-style learning experience to the [Typst](https://typst.app/) world.
 
-## 特点
+[中文文档](README-zh_cn.md)
 
-- **纯前端**：可部署在任何静态页面托管服务（如 GitHub Pages）
-- **浏览器内编译**：使用 [typst.ts](https://github.com/Myriad-Dreamin/typst.ts) 在浏览器中编译 Typst 代码
-- **实时预览**：编辑代码后即时预览结果
-- **对比检查**：内置像素级差异对比，高亮显示与参考答案的差异
-- **语法高亮 & 补全**：基于 CodeMirror 6 的 Typst 语法高亮和关键字补全
-- **进度保存**：自动保存代码和完成状态到 localStorage
-- **移动端适配**：编辑器始终可见，预览区通过 Tab 切换当前/预期/差异视图
+## Features
 
-## 本地开发
+- **Pure frontend**: deployable on any static hosting service (e.g. GitHub Pages)
+- **In-browser compilation**: compiles Typst code directly in the browser via [typst.ts](https://github.com/Myriad-Dreamin/typst.ts)
+- **Live preview**: instant output as you type
+- **Diff checking**: built-in pixel-level diff that highlights differences from the reference answer
+- **Syntax highlighting & completion**: Typst syntax highlighting and keyword completion powered by CodeMirror 6
+- **Progress saving**: code and completion state are automatically saved to localStorage
+- **Mobile-friendly**: editor always visible; preview panels switch between Current / Expected / Diff tabs
+- **Bilingual UI**: switch between English and Chinese at any time
+
+## Local Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## 构建
+## Build
 
 ```bash
 npm run build
 ```
 
-构建产物在 `dist/` 目录下。
+Output is placed in the `dist/` directory.
 
-## 添加练习
+## Adding Exercises
 
-1. 在 `exercises/` 下创建新目录，如 `exercises/06-tables/`
-2. 添加 `answer.typ` 文件（答案代码）
-3. 在 `src/exercises.ts` 中添加练习元数据
+1. Create a new directory under `exercises/`, e.g. `exercises/06-tables/`
+2. Add an `answer.typ` file (the reference solution)
+3. Add a `template.typ` file (the starting template shown to users)
+4. Register the exercise metadata in `src/exercises.ts`
 
-## 项目结构
+## Project Structure
 
 ```
 typlica/
-├── .github/workflows/deploy.yml   # GitHub Pages 部署
-├── exercises/                      # 练习题目
-│   ├── preamble.typ               # 共用前置代码
-│   ├── 01-hello-world/answer.typ
-│   ├── 02-text-styling/answer.typ
-│   ├── 03-headings/answer.typ
-│   ├── 04-lists/answer.typ
-│   └── 05-math/answer.typ
-├── scripts/
-│   └── generate-references.mjs    # 参考图片生成脚本
+├── .github/workflows/deploy.yml   # GitHub Pages deployment
+├── exercises/                      # Exercise files
+│   ├── preamble.typ               # Shared preamble
+│   ├── 01-hello-world/
+│   │   ├── answer.typ
+│   │   └── template.typ
+│   ├── 02-text-styling/
+│   ├── 03-headings/
+│   ├── 04-lists/
+│   └── 05-math/
 ├── src/
-│   ├── main.ts                    # 应用主入口
-│   ├── compiler.ts                # typst.ts 编译封装
-│   ├── editor.ts                  # CodeMirror 编辑器
-│   ├── exercises.ts               # 练习数据与进度管理
-│   ├── diff.ts                    # 图像差异对比
-│   ├── typst-lang.ts             # Typst 语法高亮
-│   └── style.css                  # 样式
+│   ├── main.ts                    # App entry point
+│   ├── compiler.ts                # typst.ts rendering wrapper
+│   ├── editor.ts                  # CodeMirror editor setup
+│   ├── exercises.ts               # Exercise data & progress management
+│   ├── diff.ts                    # Pixel-level image diff
+│   ├── i18n.ts                    # Internationalization (zh-CN / en)
+│   ├── typst-lang.ts             # Typst syntax highlighting
+│   └── style.css                  # Styles
 └── index.html
 ```
 
-## 技术栈
+## Tech Stack
 
-- [Vite](https://vitejs.dev/) — 构建工具
-- [typst.ts](https://github.com/Myriad-Dreamin/typst.ts) — 浏览器端 Typst 编译器
-- [CodeMirror 6](https://codemirror.net/) — 代码编辑器（支持移动端）
+- [Vite](https://vitejs.dev/) — build tool
+- [typst.ts](https://github.com/Myriad-Dreamin/typst.ts) — in-browser Typst compiler
+- [CodeMirror 6](https://codemirror.net/) — code editor (mobile-friendly)
 
-## 许可
+## License
 
 MIT

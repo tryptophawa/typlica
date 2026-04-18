@@ -1,8 +1,9 @@
 import './style.css';
 import { initCompiler, renderToCanvas } from './compiler';
-import { exercises, Exercise, getSavedCode, saveCode, markCompleted, isCompleted, getCompletedCount } from './exercises';
+import { exercises, Exercise, getSavedCode, saveCode, markCompleted, isCompleted, getCompletedCount, localizeExercise } from './exercises';
 import { createEditor, setEditorContent } from './editor';
 import { computeDiff } from './diff';
+import { t, getLocale, setLocale, type Locale } from './i18n';
 import type { EditorView } from '@codemirror/view';
 
 let currentExercise: Exercise = exercises[0];
@@ -13,26 +14,31 @@ let currentCanvasRef: HTMLCanvasElement | null = null;
 let hintVisible = false;
 let compilerReady = false;
 
+function getEx(ex: Exercise): Exercise {
+  return localizeExercise(ex, getLocale());
+}
+
 function renderApp(): void {
   const app = document.getElementById('app')!;
   app.innerHTML = `
     <div class="loading-overlay" id="loading">
       <div class="loading-spinner"></div>
-      <div class="loading-text">正在加载 Typst 编译器...</div>
+      <div class="loading-text">${t('loading')}</div>
     </div>
 
     <header class="header">
       <div class="header-title">Typlica</div>
       <div class="header-progress">
-        进度：<span class="count" id="progress-count">${getCompletedCount()}</span> / ${exercises.length}
+        ${t('progress')}<span class="count" id="progress-count">${getCompletedCount()}</span> / ${exercises.length}
       </div>
+      <button class="lang-btn" id="btn-lang">${t('switchLang')}</button>
     </header>
 
     <nav class="exercise-nav" id="exercise-nav">
       ${exercises.map((ex, i) => `
         <button class="nav-btn ${ex.id === currentExercise.id ? 'active' : ''} ${isCompleted(ex.id) ? 'completed' : ''}"
                 data-index="${i}">
-          ${isCompleted(ex.id) ? '<span class="check">✓</span>' : ''}${i + 1}. ${ex.title}
+          ${isCompleted(ex.id) ? '<span class="check">✓</span>' : ''}${i + 1}. ${getEx(ex).title}
         </button>
       `).join('')}
     </nav>
@@ -40,44 +46,44 @@ function renderApp(): void {
     <div class="main-container" id="main-container">
       <div class="left-panel">
         <div class="exercise-info">
-          <div class="exercise-title" id="exercise-title">${currentExercise.title}</div>
-          <div class="exercise-instructions" id="exercise-instructions">${formatInstructions(currentExercise.instructions)}</div>
+          <div class="exercise-title" id="exercise-title">${getEx(currentExercise).title}</div>
+          <div class="exercise-instructions" id="exercise-instructions">${formatInstructions(getEx(currentExercise).instructions)}</div>
         </div>
         <div class="editor-container" id="editor-container"></div>
         <div class="hint-panel ${hintVisible ? 'visible' : ''}" id="hint-panel">
-          💡 ${currentExercise.hint}
+          💡 ${getEx(currentExercise).hint}
         </div>
         <div class="editor-actions">
-          <button class="btn btn-primary" id="btn-check">检查</button>
-          <button class="btn" id="btn-reset">重置</button>
-          <button class="btn" id="btn-answer">查看答案</button>
-          <button class="btn btn-hint" id="btn-hint">提示</button>
+          <button class="btn btn-primary" id="btn-check">${t('btnCheck')}</button>
+          <button class="btn" id="btn-reset">${t('btnReset')}</button>
+          <button class="btn" id="btn-answer">${t('btnAnswer')}</button>
+          <button class="btn btn-hint" id="btn-hint">${t('btnHint')}</button>
         </div>
       </div>
 
       <div class="right-panel">
         <div class="preview-tab-bar" id="preview-tab-bar">
-          <button class="preview-tab-btn active" data-tab="current">当前结果</button>
-          <button class="preview-tab-btn" data-tab="expected">预期结果</button>
-          <button class="preview-tab-btn" data-tab="diff">差异对比</button>
+          <button class="preview-tab-btn active" data-tab="current">${t('tabCurrent')}</button>
+          <button class="preview-tab-btn" data-tab="expected">${t('tabExpected')}</button>
+          <button class="preview-tab-btn" data-tab="diff">${t('tabDiff')}</button>
         </div>
         <div class="preview-sections" id="preview-sections" data-tab="current">
           <div class="preview-section" id="preview-current">
-            <div class="preview-label">当前结果</div>
+            <div class="preview-label">${t('labelCurrent')}</div>
             <div class="preview-content" id="current-content">
-              <div class="preview-placeholder">编写代码后将在此处显示结果</div>
+              <div class="preview-placeholder">${t('placeholderCurrent')}</div>
             </div>
           </div>
           <div class="preview-section" id="preview-expected">
-            <div class="preview-label">预期结果</div>
+            <div class="preview-label">${t('labelExpected')}</div>
             <div class="preview-content" id="expected-content">
-              <div class="preview-placeholder">加载中...</div>
+              <div class="preview-placeholder">${t('placeholderExpected')}</div>
             </div>
           </div>
           <div class="preview-section" id="preview-diff">
-            <div class="preview-label">差异对比</div>
+            <div class="preview-label">${t('labelDiff')}</div>
             <div class="preview-content" id="diff-content">
-              <div class="preview-placeholder">编译完成后将自动显示差异</div>
+              <div class="preview-placeholder">${t('placeholderDiff')}</div>
             </div>
           </div>
         </div>
@@ -113,6 +119,18 @@ function setupEventListeners(): void {
   document.getElementById('btn-reset')!.addEventListener('click', resetCode);
   document.getElementById('btn-answer')!.addEventListener('click', showAnswer);
   document.getElementById('btn-hint')!.addEventListener('click', toggleHint);
+
+  document.getElementById('btn-lang')!.addEventListener('click', () => {
+    const next: Locale = getLocale() === 'zh-CN' ? 'en' : 'zh-CN';
+    setLocale(next);
+    editorView?.destroy();
+    renderApp();
+    if (compilerReady) {
+      compileExpected();
+      const code = editorView?.state.doc.toString() ?? '';
+      if (code.trim()) debouncedCompile(code);
+    }
+  });
 
   document.getElementById('preview-tab-bar')!.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest('.preview-tab-btn') as HTMLElement | null;
@@ -150,9 +168,9 @@ function switchExercise(exercise: Exercise): void {
   });
 
   // Update exercise info
-  document.getElementById('exercise-title')!.textContent = exercise.title;
-  document.getElementById('exercise-instructions')!.innerHTML = formatInstructions(exercise.instructions);
-  document.getElementById('hint-panel')!.textContent = '💡 ' + exercise.hint;
+  document.getElementById('exercise-title')!.textContent = getEx(exercise).title;
+  document.getElementById('exercise-instructions')!.innerHTML = formatInstructions(getEx(exercise).instructions);
+  document.getElementById('hint-panel')!.textContent = '💡 ' + getEx(exercise).hint;
   document.getElementById('hint-panel')!.classList.remove('visible');
 
   // Update editor
@@ -161,8 +179,8 @@ function switchExercise(exercise: Exercise): void {
 
   // Reset previews
   currentCanvasRef = null;
-  document.getElementById('current-content')!.innerHTML = '<div class="preview-placeholder">编写代码后将在此处显示结果</div>';
-  document.getElementById('diff-content')!.innerHTML = '<div class="preview-placeholder">编译完成后将自动显示差异</div>';
+  document.getElementById('current-content')!.innerHTML = `<div class="preview-placeholder">${t('placeholderCurrent')}</div>`;
+  document.getElementById('diff-content')!.innerHTML = `<div class="preview-placeholder">${t('placeholderDiff')}</div>`;
   (document.getElementById('match-status')! as HTMLElement).style.display = 'none';
 
   // Compile expected and current
@@ -205,11 +223,11 @@ async function compileExpected(): Promise<void> {
     return;
   }
 
-  container.innerHTML = '<div class="preview-placeholder">编译预期结果中...</div>';
+  container.innerHTML = `<div class="preview-placeholder">${t('compilingExpected')}</div>`;
 
   const result = await renderToCanvas(container, currentExercise.answerCode);
   if (result.error) {
-    container.innerHTML = `<div class="preview-error">答案编译失败: ${escapeHtml(result.error)}</div>`;
+    container.innerHTML = `<div class="preview-error">${t('answerCompileFailed')}: ${escapeHtml(result.error)}</div>`;
   } else if (result.canvas) {
     expectedCanvasCache.set(currentExercise.id, result.canvas);
     autoRunDiff();
@@ -270,7 +288,7 @@ function updateMatchStatus(percentage: number): void {
   }
 
   textEl.className = 'match-text ' + colorClass;
-  textEl.textContent = percentage >= 99.5 ? '✓ 完美匹配!' : percentage.toFixed(1) + '%';
+  textEl.textContent = percentage >= 99.5 ? t('perfectMatch') : percentage.toFixed(1) + '%';
 }
 
 function updateProgressAndNav(): void {
@@ -327,10 +345,10 @@ async function init(): Promise<void> {
     const loading = document.getElementById('loading');
     if (loading) {
       loading.innerHTML = `
-        <div style="color: var(--error); font-size: 16px;">编译器加载失败</div>
+        <div style="color: var(--error); font-size: 16px;">${t('loadFailed')}</div>
         <div style="color: var(--text-secondary); font-size: 13px; max-width: 400px; text-align: center;">
           ${escapeHtml(e instanceof Error ? e.message : String(e))}<br><br>
-          请检查网络连接并刷新页面重试。
+          ${t('loadFailedHint')}
         </div>
       `;
     }

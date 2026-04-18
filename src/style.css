@@ -66,6 +66,22 @@ body {
   font-weight: 600;
 }
 
+.lang-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.lang-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* Exercise navigation */
 .exercise-nav {
   display: flex;
