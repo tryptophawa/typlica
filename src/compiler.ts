@@ -37,20 +37,15 @@ export async function renderToCanvas(
 ): Promise<{ canvas: HTMLCanvasElement; error: null } | { canvas: null; error: string }> {
   try {
     // Render into an offscreen temp container to avoid typst.ts injecting
-    // semantic text overlays and inline styles into our visible DOM
+    // semantic text overlays into our visible DOM
     const tmp = document.createElement('div');
     await $typst.canvas(tmp, { mainContent: PREAMBLE + code, pixelPerPt: 3 });
-    const srcCanvas = tmp.querySelector('canvas') as HTMLCanvasElement | null;
-    if (!srcCanvas) {
+    const canvas = tmp.querySelector('canvas') as HTMLCanvasElement | null;
+    if (!canvas) {
       return { canvas: null, error: 'Canvas rendering produced no output' };
     }
-    // Copy pixel data to a clean canvas so we don't carry typst.ts wrapper DOM
-    const canvas = document.createElement('canvas');
-    canvas.width = srcCanvas.width;
-    canvas.height = srcCanvas.height;
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(srcCanvas, 0, 0);
-
+    // Detach canvas from temp div and move it into the real container
+    canvas.remove();
     container.innerHTML = '';
     container.appendChild(canvas);
     return { canvas, error: null };

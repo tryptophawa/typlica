@@ -9,6 +9,7 @@ let currentExercise: Exercise = exercises[0];
 let editorView: EditorView | null = null;
 let compileTimeout: ReturnType<typeof setTimeout> | null = null;
 let expectedCanvasCache: Map<string, HTMLCanvasElement> = new Map();
+let currentCanvasRef: HTMLCanvasElement | null = null;
 let hintVisible = false;
 let compilerReady = false;
 
@@ -71,7 +72,7 @@ function renderApp(): void {
           <div class="preview-section" id="preview-diff">
             <div class="preview-label">差异对比</div>
             <div class="preview-content" id="diff-content">
-              <div class="preview-placeholder">点击"检查"按钮进行对比</div>
+              <div class="preview-placeholder">编译完成后将自动显示差异</div>
             </div>
           </div>
         </div>
@@ -139,8 +140,9 @@ function switchExercise(exercise: Exercise): void {
   setEditorContent(editorView!, savedCode ?? exercise.templateCode);
 
   // Reset previews
+  currentCanvasRef = null;
   document.getElementById('current-content')!.innerHTML = '<div class="preview-placeholder">编写代码后将在此处显示结果</div>';
-  document.getElementById('diff-content')!.innerHTML = '<div class="preview-placeholder">点击"检查"按钮进行对比</div>';
+  document.getElementById('diff-content')!.innerHTML = '<div class="preview-placeholder">编译完成后将自动显示差异</div>';
   (document.getElementById('match-status')! as HTMLElement).style.display = 'none';
 
   // Compile expected and current
@@ -163,7 +165,11 @@ async function compileUserCode(code: string): Promise<void> {
   const result = await renderToCanvas(container, code);
 
   if (result.error) {
+    currentCanvasRef = null;
     container.innerHTML = `<div class="preview-error">${escapeHtml(result.error)}</div>`;
+  } else if (result.canvas) {
+    currentCanvasRef = result.canvas;
+    autoRunDiff();
   }
 }
 
@@ -186,59 +192,18 @@ async function compileExpected(): Promise<void> {
     container.innerHTML = `<div class="preview-error">答案编译失败: ${escapeHtml(result.error)}</div>`;
   } else if (result.canvas) {
     expectedCanvasCache.set(currentExercise.id, result.canvas);
+    autoRunDiff();
   }
 }
 
-async function checkAnswer(): Promise<void> {
-  if (!compilerReady) return;
-
-  const code = editorView!.state.doc.toString();
-
-  // Ensure both panels are rendered
-  const currentContainer = document.getElementById('current-content')!;
-  const currentResult = await renderToCanvas(currentContainer, code);
-
-  if (currentResult.error) {
-    currentContainer.innerHTML = `<div class="preview-error">${escapeHtml(currentResult.error)}</div>`;
-    updateMatchStatus(0);
-    return;
-  }
-
-  // Get expected canvas (from cache or render fresh)
-  let expectedCanvas = expectedCanvasCache.get(currentExercise.id);
-  if (!expectedCanvas) {
-    const tempDiv = document.createElement('div');
-    const expResult = await renderToCanvas(tempDiv, currentExercise.answerCode);
-    if (expResult.error || !expResult.canvas) {
-      updateMatchStatus(0);
-      return;
-    }
-    expectedCanvas = expResult.canvas;
-    expectedCanvasCache.set(currentExercise.id, expectedCanvas);
-  }
+function autoRunDiff(): void {
+  const expectedCanvas = expectedCanvasCache.get(currentExercise.id);
+  if (!currentCanvasRef || !expectedCanvas) return;
 
   try {
-    const diff = computeDiff(currentResult.canvas!, expectedCanvas);
+    const diff = computeDiff(currentCanvasRef, expectedCanvas);
     const diffContainer = document.getElementById('diff-content')!;
-
-    if (diff.type === 'size-mismatch') {
-      diffContainer.innerHTML = `
-        <div class="preview-size-mismatch">
-          <div class="size-icon">⚠</div>
-          <div>输出尺寸不匹配</div>
-          <div class="size-detail">
-            当前: ${diff.currentSize.width} × ${diff.currentSize.height}<br>
-            预期: ${diff.expectedSize.width} × ${diff.expectedSize.height}
-          </div>
-        </div>
-      `;
-      updateMatchStatus(0);
-      return;
-    }
-
     diffContainer.innerHTML = '';
-    diff.diffCanvas.style.maxWidth = '100%';
-    diff.diffCanvas.style.height = 'auto';
     diffContainer.appendChild(diff.diffCanvas);
 
     updateMatchStatus(diff.matchPercentage);
@@ -249,9 +214,13 @@ async function checkAnswer(): Promise<void> {
     }
   } catch (e) {
     console.error('Diff computation failed:', e);
-    document.getElementById('diff-content')!.innerHTML =
-      '<div class="preview-error">对比计算失败</div>';
   }
+}
+
+async function checkAnswer(): Promise<void> {
+  if (!compilerReady) return;
+  // Re-render user code then auto-diff
+  await compileUserCode(editorView!.state.doc.toString());
 }
 
 
