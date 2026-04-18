@@ -1,7 +1,6 @@
 import { EditorView, keymap } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { oneDark } from '@codemirror/theme-one-dark';
 import { autocompletion, CompletionContext, CompletionResult } from '@codemirror/autocomplete';
 import { typstLanguage } from './typst-lang';
 
@@ -62,14 +61,22 @@ export function createEditor(
       extensions: [
         keymap.of([...defaultKeymap, indentWithTab]),
         typstLanguage,
-        oneDark,
-        autocompletion({ override: [typstCompletion] }),
+        autocompletion({
+          override: [typstCompletion],
+          closeOnBlur: true,
+          defaultKeymap: false,
+        }),
         updateListener,
         EditorView.lineWrapping,
         EditorView.theme({
           '&': { height: '100%', fontSize: '14px' },
           '.cm-scroller': { overflow: 'auto' },
           '.cm-content': { fontFamily: '"Fira Code", "Cascadia Code", "JetBrains Mono", monospace' },
+          '.cm-gutters': { background: '#f8f9fb', borderRight: '1px solid #e0e1e6', color: '#8b8da3' },
+          '.cm-activeLineGutter': { background: '#eeeef9' },
+          '.cm-activeLine': { background: '#f5f5ff' },
+          '&.cm-focused .cm-cursor': { borderLeftColor: '#5b5fc7' },
+          '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': { background: '#d7d8ff' },
         }),
       ],
     }),

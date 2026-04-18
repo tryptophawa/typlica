@@ -9,7 +9,6 @@ let currentExercise: Exercise = exercises[0];
 let editorView: EditorView | null = null;
 let compileTimeout: ReturnType<typeof setTimeout> | null = null;
 let expectedSvgCache: Map<string, string> = new Map();
-let activeTab: 'current' | 'expected' | 'diff' = 'current';
 let hintVisible = false;
 let compilerReady = false;
 
@@ -56,25 +55,20 @@ function renderApp(): void {
       </div>
 
       <div class="right-panel">
-        <div class="preview-tabs">
-          <button class="preview-tab ${activeTab === 'current' ? 'active' : ''}" data-tab="current">当前结果</button>
-          <button class="preview-tab ${activeTab === 'expected' ? 'active' : ''}" data-tab="expected">预期结果</button>
-          <button class="preview-tab ${activeTab === 'diff' ? 'active' : ''}" data-tab="diff">差异对比</button>
-        </div>
-        <div class="preview-sections show-tabs" id="preview-sections">
-          <div class="preview-section ${activeTab === 'current' ? 'active' : ''}" id="preview-current">
+        <div class="preview-sections" id="preview-sections">
+          <div class="preview-section" id="preview-current">
             <div class="preview-label">当前结果</div>
             <div class="preview-content" id="current-content">
               <div class="preview-placeholder">编写代码后将在此处显示结果</div>
             </div>
           </div>
-          <div class="preview-section ${activeTab === 'expected' ? 'active' : ''}" id="preview-expected">
+          <div class="preview-section" id="preview-expected">
             <div class="preview-label">预期结果</div>
             <div class="preview-content" id="expected-content">
               <div class="preview-placeholder">加载中...</div>
             </div>
           </div>
-          <div class="preview-section ${activeTab === 'diff' ? 'active' : ''}" id="preview-diff">
+          <div class="preview-section" id="preview-diff">
             <div class="preview-label">差异对比</div>
             <div class="preview-content" id="diff-content">
               <div class="preview-placeholder">点击"检查"按钮进行对比</div>
@@ -100,7 +94,6 @@ function formatInstructions(text: string): string {
 }
 
 function setupEventListeners(): void {
-  // Exercise navigation
   document.getElementById('exercise-nav')!.addEventListener('click', (e) => {
     const target = (e.target as HTMLElement).closest('.nav-btn') as HTMLElement | null;
     if (!target) return;
@@ -108,15 +101,6 @@ function setupEventListeners(): void {
     switchExercise(exercises[index]);
   });
 
-  // Preview tabs
-  document.querySelectorAll('.preview-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      activeTab = (tab as HTMLElement).dataset.tab as typeof activeTab;
-      updatePreviewTabs();
-    });
-  });
-
-  // Action buttons
   document.getElementById('btn-check')!.addEventListener('click', checkAnswer);
   document.getElementById('btn-reset')!.addEventListener('click', resetCode);
   document.getElementById('btn-answer')!.addEventListener('click', showAnswer);
@@ -126,7 +110,7 @@ function setupEventListeners(): void {
 function setupEditor(): void {
   const container = document.getElementById('editor-container')!;
   const savedCode = getSavedCode(currentExercise.id);
-  const initialCode = savedCode ?? currentExercise.starterCode;
+  const initialCode = savedCode ?? currentExercise.templateCode;
 
   editorView = createEditor(container, initialCode, (code) => {
     saveCode(currentExercise.id, code);
@@ -134,20 +118,10 @@ function setupEditor(): void {
   });
 }
 
-function updatePreviewTabs(): void {
-  document.querySelectorAll('.preview-tab').forEach(tab => {
-    tab.classList.toggle('active', (tab as HTMLElement).dataset.tab === activeTab);
-  });
-  document.querySelectorAll('.preview-section').forEach(section => {
-    section.classList.toggle('active', section.id === `preview-${activeTab}`);
-  });
-}
-
 function switchExercise(exercise: Exercise): void {
   if (exercise.id === currentExercise.id) return;
   currentExercise = exercise;
   hintVisible = false;
-  activeTab = 'current';
 
   // Update nav
   document.querySelectorAll('.nav-btn').forEach((btn, i) => {
@@ -162,17 +136,16 @@ function switchExercise(exercise: Exercise): void {
 
   // Update editor
   const savedCode = getSavedCode(exercise.id);
-  setEditorContent(editorView!, savedCode ?? exercise.starterCode);
+  setEditorContent(editorView!, savedCode ?? exercise.templateCode);
 
   // Reset previews
   document.getElementById('current-content')!.innerHTML = '<div class="preview-placeholder">编写代码后将在此处显示结果</div>';
   document.getElementById('diff-content')!.innerHTML = '<div class="preview-placeholder">点击"检查"按钮进行对比</div>';
   (document.getElementById('match-status')! as HTMLElement).style.display = 'none';
-  updatePreviewTabs();
 
   // Compile expected and current
   compileExpected();
-  const code = savedCode ?? exercise.starterCode;
+  const code = savedCode ?? exercise.templateCode;
   if (code.trim()) {
     debouncedCompile(code);
   }
@@ -201,7 +174,6 @@ async function compileExpected(): Promise<void> {
 
   const container = document.getElementById('expected-content')!;
 
-  // Check cache first
   if (expectedSvgCache.has(currentExercise.id)) {
     container.innerHTML = expectedSvgCache.get(currentExercise.id)!;
     return;
@@ -235,6 +207,22 @@ async function checkAnswer(): Promise<void> {
   try {
     const diff = await computeDiff(currentResult.svg!, expectedResult);
     const diffContainer = document.getElementById('diff-content')!;
+
+    if (diff.type === 'size-mismatch') {
+      diffContainer.innerHTML = `
+        <div class="preview-size-mismatch">
+          <div class="size-icon">⚠</div>
+          <div>输出尺寸不匹配</div>
+          <div class="size-detail">
+            当前: ${diff.currentSize.width} × ${diff.currentSize.height}<br>
+            预期: ${diff.expectedSize.width} × ${diff.expectedSize.height}
+          </div>
+        </div>
+      `;
+      updateMatchStatus(0);
+      return;
+    }
+
     diffContainer.innerHTML = '';
     diff.diffCanvas.style.maxWidth = '100%';
     diff.diffCanvas.style.height = 'auto';
@@ -242,11 +230,6 @@ async function checkAnswer(): Promise<void> {
 
     updateMatchStatus(diff.matchPercentage);
 
-    // Auto-switch to diff tab
-    activeTab = 'diff';
-    updatePreviewTabs();
-
-    // Mark as completed if match is very high
     if (diff.matchPercentage >= 99.5) {
       markCompleted(currentExercise.id);
       updateProgressAndNav();
@@ -308,8 +291,8 @@ function updateProgressAndNav(): void {
 }
 
 function resetCode(): void {
-  setEditorContent(editorView!, currentExercise.starterCode);
-  saveCode(currentExercise.id, currentExercise.starterCode);
+  setEditorContent(editorView!, currentExercise.templateCode);
+  saveCode(currentExercise.id, currentExercise.templateCode);
 }
 
 function showAnswer(): void {
@@ -338,10 +321,8 @@ async function init(): Promise<void> {
     const loading = document.getElementById('loading');
     if (loading) loading.remove();
 
-    // Compile expected result for current exercise
     await compileExpected();
 
-    // Compile initial code if any
     const code = editorView?.state.doc.toString() ?? '';
     if (code.trim()) {
       await compileUserCode(code);

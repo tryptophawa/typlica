@@ -12,7 +12,6 @@
   "dependencies": {
     "codemirror": "^6.0.1",
     "@codemirror/language": "^6.10.0",
-    "@codemirror/theme-one-dark": "^6.1.0",
     "@codemirror/autocomplete": "^6.18.0",
     "@lezer/highlight": "^1.2.0",
     "pixelmatch": "^7.1.0"

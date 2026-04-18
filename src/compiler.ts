@@ -1,7 +1,7 @@
 const COMPILER_WASM = 'https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.6.0/pkg/typst_ts_web_compiler_bg.wasm';
 const RENDERER_WASM = 'https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-renderer@0.6.0/pkg/typst_ts_renderer_bg.wasm';
 
-const PREAMBLE = `#set page(width: 300pt, height: auto, margin: 20pt)
+const PREAMBLE = `#set page(width: auto, height: auto, margin: 20pt)
 #set text(size: 11pt)
 `;
 

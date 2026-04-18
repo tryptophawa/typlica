@@ -1,16 +1,20 @@
 :root {
-  --bg-primary: #0f0f17;
-  --bg-secondary: #1a1a2e;
-  --bg-tertiary: #16213e;
-  --text-primary: #e2e8f0;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --accent: #7c3aed;
-  --accent-hover: #6d28d9;
-  --success: #10b981;
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --border: #2d2d44;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fb;
+  --bg-tertiary: #f0f1f4;
+  --text-primary: #1a1a2e;
+  --text-secondary: #555770;
+  --text-muted: #8b8da3;
+  --accent: #5b5fc7;
+  --accent-hover: #4a4eb8;
+  --accent-light: #eeeef9;
+  --success: #2e7d57;
+  --success-light: #e8f5e9;
+  --error: #c62828;
+  --error-light: #fce4ec;
+  --warning: #e8811a;
+  --warning-light: #fff3e0;
+  --border: #e0e1e6;
   --preview-bg: #ffffff;
 }
 
@@ -21,7 +25,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
@@ -39,8 +43,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
-  background: var(--bg-secondary);
+  padding: 10px 20px;
+  background: var(--bg-primary);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -49,7 +53,7 @@ body {
   font-size: 18px;
   font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .header-progress {
@@ -65,8 +69,8 @@ body {
 /* Exercise navigation */
 .exercise-nav {
   display: flex;
-  gap: 4px;
-  padding: 6px 16px;
+  gap: 6px;
+  padding: 8px 20px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
@@ -83,10 +87,10 @@ body {
 }
 
 .nav-btn {
-  padding: 6px 14px;
+  padding: 5px 14px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: transparent;
+  background: var(--bg-primary);
   color: var(--text-secondary);
   font-size: 12px;
   cursor: pointer;
@@ -97,6 +101,7 @@ body {
 .nav-btn:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
+  border-color: var(--text-muted);
 }
 
 .nav-btn.active {
@@ -108,10 +113,12 @@ body {
 .nav-btn.completed {
   border-color: var(--success);
   color: var(--success);
+  background: var(--success-light);
 }
 
 .nav-btn.completed.active {
   background: var(--success);
+  border-color: var(--success);
   color: white;
 }
 
@@ -128,20 +135,21 @@ body {
 
 /* Left panel */
 .left-panel {
-  width: 50%;
+  width: 45%;
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border);
+  background: var(--bg-primary);
 }
 
 .exercise-info {
-  padding: 12px 16px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .exercise-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   margin-bottom: 6px;
   color: var(--text-primary);
@@ -168,21 +176,22 @@ body {
 .editor-container {
   flex: 1;
   overflow: hidden;
+  border-bottom: 1px solid var(--border);
 }
 
 .editor-actions {
   display: flex;
   gap: 8px;
   padding: 8px 16px;
-  border-top: 1px solid var(--border);
   flex-shrink: 0;
+  background: var(--bg-secondary);
 }
 
 .btn {
   padding: 6px 16px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: transparent;
+  background: var(--bg-primary);
   color: var(--text-secondary);
   font-size: 12px;
   cursor: pointer;
@@ -192,6 +201,7 @@ body {
 .btn:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
+  border-color: var(--text-muted);
 }
 
 .btn-primary {
@@ -202,6 +212,7 @@ body {
 
 .btn-primary:hover {
   background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .btn-hint {
@@ -210,37 +221,10 @@ body {
 
 /* Right panel */
 .right-panel {
-  width: 50%;
+  width: 55%;
   display: flex;
   flex-direction: column;
-}
-
-.preview-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.preview-tab {
-  flex: 1;
-  padding: 8px 12px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.preview-tab:hover {
-  color: var(--text-primary);
-  background: var(--bg-secondary);
-}
-
-.preview-tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  background: var(--bg-primary);
 }
 
 .preview-sections {
@@ -250,30 +234,13 @@ body {
   overflow: hidden;
 }
 
-/* When showing all three */
-.preview-sections.show-all .preview-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-/* When showing tabs (single view) */
-.preview-sections.show-tabs .preview-section {
-  display: none;
-  flex: 1;
-  flex-direction: column;
-}
-
-.preview-sections.show-tabs .preview-section.active {
-  display: flex;
-}
-
 .preview-section {
   flex: 1;
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid var(--border);
   overflow: hidden;
+  min-height: 0;
 }
 
 .preview-section:last-child {
@@ -297,6 +264,9 @@ body {
   overflow: auto;
   background: var(--preview-bg);
   padding: 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .preview-content svg {
@@ -304,13 +274,20 @@ body {
   height: auto;
 }
 
+.preview-content canvas {
+  max-width: 100%;
+  height: auto;
+}
+
 .preview-error {
-  padding: 16px;
+  padding: 12px 16px;
   color: var(--error);
   font-family: 'Fira Code', monospace;
   font-size: 12px;
   white-space: pre-wrap;
-  background: #1a0000;
+  background: var(--error-light);
+  border-radius: 4px;
+  width: 100%;
 }
 
 .preview-placeholder {
@@ -318,8 +295,33 @@ body {
   align-items: center;
   justify-content: center;
   height: 100%;
+  width: 100%;
   color: var(--text-muted);
   font-size: 13px;
+}
+
+.preview-size-mismatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  width: 100%;
+  color: var(--warning);
+  font-size: 13px;
+  text-align: center;
+  padding: 16px;
+}
+
+.preview-size-mismatch .size-icon {
+  font-size: 28px;
+}
+
+.preview-size-mismatch .size-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'Fira Code', monospace;
 }
 
 /* Match status bar */
@@ -350,7 +352,7 @@ body {
 .match-text {
   font-size: 13px;
   font-weight: 600;
-  min-width: 60px;
+  min-width: 80px;
   text-align: right;
 }
 
@@ -369,7 +371,7 @@ body {
 /* Hint panel */
 .hint-panel {
   padding: 10px 16px;
-  background: var(--bg-tertiary);
+  background: var(--warning-light);
   border-top: 1px solid var(--border);
   color: var(--warning);
   font-size: 13px;
@@ -396,8 +398,8 @@ body {
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border: 3px solid var(--border);
   border-top-color: var(--accent);
   border-radius: 50%;
