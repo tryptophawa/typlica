@@ -1,4 +1,4 @@
-`print("Hello")`
+﻿`print("Hello")`
 
 ```rust
 fn main() {}

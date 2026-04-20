@@ -1,4 +1,4 @@
-#box(stroke: red)[盒子]
+﻿#box(stroke: red)[盒子]
 
 #block(fill: blue)[块]
 

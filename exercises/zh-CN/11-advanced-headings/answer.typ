@@ -1,5 +1,5 @@
-#set heading(numbering: "1.1")
+﻿#set heading(numbering: "1.1")
 
-= 简�?
+= 简介
 
 == 背景
