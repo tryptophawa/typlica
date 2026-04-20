@@ -1,5 +1,3 @@
-#set page(width: auto, height: auto, margin: 1cm)
-
 Paragraph 1
 
 // Add 2em vertical spacing

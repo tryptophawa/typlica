@@ -1,7 +1,5 @@
-#set page(width: auto, height: auto, margin: 1cm)
-
 #set heading(numbering: "1.1")
 
-= 简介
+= 简�?
 
 == 背景

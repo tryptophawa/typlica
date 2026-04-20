@@ -1,5 +1,3 @@
-#set page(width: auto, height: auto, margin: 1cm)
-
 // Create a 2x2 matrix with 1, 2 (first row) and 3, 4 (second row)
 
 

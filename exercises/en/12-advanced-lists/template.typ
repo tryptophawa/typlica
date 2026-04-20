@@ -1,5 +1,3 @@
-#set page(width: auto, height: auto, margin: 1cm)
-
 // Create a main unordered list item 'Apple' containing a nested unordered list with 'Red Apple' and 'Green Apple'
 
 

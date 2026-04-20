@@ -1,5 +1,3 @@
-#set page(width: auto, height: auto, margin: 1cm)
-
 #box(stroke: red)[盒子]
 
 #block(fill: blue)[块]

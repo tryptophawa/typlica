@@ -1,5 +1,3 @@
-#set page(width: auto, height: auto, margin: 1cm)
-
 $ mat(1, 2; 3, 4) $
 
 $ sum_(i=1)^n i $
